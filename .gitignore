@@ -1,0 +1,16 @@
+# .gitignore
+
+# Virtual Environment Folders
+.venv/
+venv/
+
+# Python files
+__pycache__/
+
+# Logs and Models generated during training
+tensorboard_logs/
+*.log
+
+# Windows specific files
+*.exe
+Thumbs.db
