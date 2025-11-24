@@ -2,7 +2,7 @@
 
 **Student Name:** Cyusa Loic  
 **Video Recording:** [Link to your Video - 3 minutes max, Camera On, Share the entire Screen]  
-**GitHub Repository:** [Link to your repository]
+**GitHub Repository:** (https://github.com/cyloic/student_name_rl_summative.git)
 
 ---
 
@@ -236,3 +236,4 @@ With additional time, the project could be improved by:
 ---
 
 **End of Report**
+
