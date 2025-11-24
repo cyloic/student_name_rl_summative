@@ -1,4 +1,4 @@
-# 🤖 SmartSort RL Agent
+#  SmartSort RL Agent
 
 > A Reinforcement Learning approach to intelligent waste classification with low-latency decision-making
 
@@ -58,7 +58,7 @@ The system compares three RL algorithms: **DQN** (Value-Based), **PPO**, and **A
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/yourusername/cyusa_loic_rl_summative.git
+   git clone https://github.com/cyloic/cyusa_loic_rl_summative.git
    cd cyusa_loic_rl_summative
    ```
 
@@ -327,3 +327,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 <div align="center">
   <strong>Made with ❤️ for intelligent waste management</strong>
 </div>
+
