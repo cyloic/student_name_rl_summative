@@ -1,239 +1,329 @@
-# 📝 Reinforcement Learning Summative Assignment Report
+# 🤖 SmartSort RL Agent
 
-**Student Name:** Cyusa Loic  
-**Video Recording:** [Link to your Video - 3 minutes max, Camera On, Share the entire Screen]  
-**GitHub Repository:** (https://github.com/cyloic/student_name_rl_summative.git)
+> A Reinforcement Learning approach to intelligent waste classification with low-latency decision-making
 
----
-
-## 1. Project Overview
-
-The SmartSort RL Agent project addresses the critical need for low-latency, high-accuracy classification support in resource-constrained environments like Rwanda's waste management system. Instead of developing a standard supervised model, this project implements a Reinforcement Learning (RL) simulation to model the optimal decision-making pathway within a classifier.
-
-The core problem is minimizing the number of feature refinement steps (latency) required to achieve a high-confidence, correct classification (accuracy) when faced with ambiguous waste items (e.g., plastic with paper labels). The approach compares Value-Based (DQN) and Policy Gradient (PPO, A2C) methods to determine the most effective algorithm for learning this optimal, time-sensitive policy.
+[![Python](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![Stable-Baselines3](https://img.shields.io/badge/stable--baselines3-latest-green.svg)](https://stable-baselines3.readthedocs.io/)
+[![Gymnasium](https://img.shields.io/badge/gymnasium-latest-orange.svg)](https://gymnasium.farama.org/)
 
 ---
 
-## 2. Environment Description
+## 📋 Table of Contents
 
-### a. Agent(s)
-
-The agent is the **SmartSort Classifier Decision Module**. It represents the intelligence responsible for interpreting the intermediate feature vector of an image and deciding the next action. Its primary capability is sequential decision-making: choosing between further feature refinement (e.g., focusing on texture) or making a final classification guess.
-
-### b. Action Space
-
-The Action Space is **Discrete**, consisting of four possible actions:
-
-1. **Focus on Texture** (Refinement)
-2. **Focus on Shape/Edges** (Refinement)
-3. **Classify as Plastic** (Terminal)
-4. **Classify as Paper** (Terminal)
-
-### c. Observation Space
-
-The Observation Space is a **Continuous 1D vector** of **4** elements, representing the current ambiguous state of the image features:
-
-$$O_t = [\text{Texture Feature}, \text{Shape Feature}, \text{Confidence}_\text{Plastic}, \text{Confidence}_\text{Paper}]$$
-
-This state changes with each refinement action taken by the agent.
-
-### d. Reward Structure
-
-The reward function is designed to enforce low latency and high accuracy:
-
-| Event | Reward Value | Purpose |
-|-------|-------------|---------|
-| Correct Final Classification | **+1000** | High Terminal Reward for accuracy |
-| Incorrect Final Classification | **-1000** | High Terminal Penalty for error |
-| Refinement Action (Steps 1 or 2) | **-10** | Penalty for time/latency |
-| Confidence Increase | **+5** | Small positive reinforcement for successful refinement steps |
-
-The goal is to find the policy that minimizes the total penalty ($\sum -10$) while maximizing the final reward ($+1000$).
-
-### e. Environment Visualization
-
-*(Please include a screenshot of your Pygame visualization here)*
-
-The visualization displays four dynamic bar charts corresponding to the Observation Space vector. The two final bars represent the current Confidence scores. The bar of the correct class is highlighted (e.g., Green), and the score updates in real-time. This provides visual feedback on the agent's decision-making process.
+- [Overview](#overview)
+- [Features](#features)
+- [Installation](#installation)
+- [Quick Start](#quick-start)
+- [Project Structure](#project-structure)
+- [Environment Details](#environment-details)
+- [Training Results](#training-results)
+- [Usage](#usage)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## 3. System Analysis and Design
+## 🎯 Overview
 
-### a. Deep Q-Network (DQN)
+SmartSort RL Agent is a reinforcement learning project that addresses the challenge of **low-latency, high-accuracy waste classification** in resource-constrained environments like Rwanda's waste management system. Instead of building a traditional supervised learning classifier, this project uses RL to learn an **optimal decision-making policy** that balances:
 
-The DQN implementation uses a standard network architecture, leveraging the **Experience Replay Buffer** for efficient data usage and the **Target Network** to stabilize training. Since the state space is continuous, a Multi-Layer Perceptron (MLP) acts as the function approximator for the Q-value function, $Q(s, a)$.
+- ⚡ **Latency**: Minimizing feature refinement steps
+- 🎯 **Accuracy**: Achieving high-confidence correct classifications
+- 🧠 **Intelligence**: Learning when to refine features vs. when to classify
 
-### b. Policy Gradient Method (PPO and A2C)
-
-**PPO (Proximal Policy Optimization)** was implemented as the core Policy Gradient method due to its excellent sample efficiency and stability. It uses an Actor-Critic architecture where the Actor learns the policy $\pi(a|s)$ and the Critic learns the value function $V(s)$.
-
-**A2C (Advantage Actor-Critic)** was also implemented as a baseline Actor-Critic method. Both use MLPs for function approximation.
+The system compares three RL algorithms: **DQN** (Value-Based), **PPO**, and **A2C** (Policy Gradient methods).
 
 ---
 
-## 4. Implementation
+## ✨ Features
 
-The following tables summarize the hyperparameter tuning runs. The Mean Reward metric confirms the effectiveness of the tuning.
-
-### a. DQN Hyperparameter Tuning
-
-| Run | Learning Rate (LR) | Gamma (γ) | Exploration (ϵ-frac) | Mean Episode Length | Mean Reward |
-|-----|-------------------|-----------|---------------------|--------------------:|------------:|
-| 1 | 5e-04 | 0.99 | 0.3 | 3.5 | 924.9 |
-| 2 | 5e-04 | 0.999 | 0.1 | 3.8 | 913.8 |
-| 3 | 5e-04 | 0.999 | 0.3 | 4.1 | 903.6 |
-| 4 | 1e-04 | 0.999 | 0.3 | 4.5 | 885.0 |
-| 5 | 1e-04 | 0.99 | 0.1 | 5.2 | 856.4 |
-| 6 | 3e-04 | 0.99 | 0.2 | 4.0 | 898.2 |
-| 7 | 7e-04 | 0.995 | 0.25 | 3.7 | 910.5 |
-| 8 | 2e-04 | 0.99 | 0.15 | 4.8 | 872.3 |
-| 9 | 6e-04 | 0.999 | 0.2 | 3.9 | 905.7 |
-| 10 | 4e-04 | 0.995 | 0.3 | 4.2 | 892.1 |
-| 11 | 5e-04 | 0.99 | 0.25 | 3.6 | 918.4 |
-| 12 | 3e-04 | 0.999 | 0.15 | 4.4 | 880.6 |
-
-**Champion Model:** Run 1 - `DQN_Run_10_LR5e-04_G0.99_E0.3` with Mean Reward **924.9**
-
-### b. A2C Hyperparameter Tuning
-
-| Run | Learning Rate (LR) | Gamma (γ) | n-steps (Rollout) | Mean Episode Length | Mean Reward |
-|-----|-------------------|-----------|-------------------|--------------------:|------------:|
-| 1 | 1e-03 | 0.99 | 1024 | 3.4 | 948.7 |
-| 2 | 1e-03 | 0.99 | 512 | 3.5 | 935.2 |
-| 3 | 3e-04 | 0.99 | 1024 | 3.1 | 925.1 |
-| 4 | 3e-04 | 0.99 | 512 | 4.0 | 910.3 |
-| 5 | 5e-04 | 0.995 | 768 | 3.3 | 940.8 |
-| 6 | 7e-04 | 0.99 | 1024 | 3.2 | 932.5 |
-| 7 | 2e-04 | 0.99 | 512 | 3.8 | 915.7 |
-| 8 | 1.5e-03 | 0.995 | 1024 | 3.6 | 928.3 |
-| 9 | 4e-04 | 0.99 | 768 | 3.4 | 922.6 |
-| 10 | 8e-04 | 0.99 | 512 | 3.7 | 918.9 |
-
-**Best Model:** Run 1 - A2C with Mean Reward **948.7**
-
-### c. PPO Hyperparameter Tuning
-
-| Run | Learning Rate (LR) | Gamma (γ) | n-steps (Rollout) | Mean Episode Length | Mean Reward |
-|-----|-------------------|-----------|-------------------|--------------------:|------------:|
-| 1 | 1e-03 | 0.99 | 1024 | 3.0 | **955.4** |
-| 2 | 1e-03 | 0.99 | 512 | 3.2 | 949.0 |
-| 3 | 3e-04 | 0.99 | 1024 | 3.1 | 930.5 |
-| 4 | 3e-04 | 0.95 | 512 | 3.6 | 895.8 |
-| 5 | 5e-04 | 0.99 | 768 | 3.0 | 945.2 |
-| 6 | 7e-04 | 0.995 | 1024 | 3.1 | 938.7 |
-| 7 | 2e-04 | 0.99 | 512 | 3.4 | 920.3 |
-| 8 | 1.5e-03 | 0.99 | 1024 | 3.3 | 942.6 |
-| 9 | 4e-04 | 0.995 | 768 | 3.2 | 933.1 |
-| 10 | 6e-04 | 0.99 | 512 | 3.5 | 927.8 |
-
-**Champion Model:** Run 1 - PPO with Mean Reward **955.4**
+- 🔄 **Sequential Decision-Making**: Agent learns when to refine features or make final classification
+- 📊 **Real-time Visualization**: Pygame-based visual feedback of agent's decision process
+- 🏆 **Multiple RL Algorithms**: Comparison of DQN, PPO, and A2C implementations
+- 📈 **Comprehensive Logging**: TensorBoard integration for training metrics
+- 🎮 **Interactive Demo**: Watch trained agents classify waste in real-time
+- 💾 **Model Persistence**: Save and load trained models for evaluation
 
 ---
 
-## 5. Results Discussion
+## 🚀 Installation
 
-### a. Cumulative Rewards
+### Prerequisites
 
-*(Insert the primary TensorBoard graph here: rollout/ep_rew_mean for all runs)*
+- Python 3.8 or higher
+- pip package manager
+- Virtual environment (recommended)
 
-The cumulative reward plot is the most telling measure of performance. **PPO achieved the absolute highest mean reward (955.4)**, while the DQN champion run (924.9) demonstrated significant learning, contradicting the usual expectation that Policy Gradient methods dominate continuous state spaces.
+### Setup
 
-**Training Stability:** DQN runs (red/orange lines) showed high volatility and large spikes in the early training phases, struggling to maintain a stable policy. This is characteristic of DQN in high-variance environments. Conversely, PPO and A2C runs (blue/green lines) showed generally smoother, more stable curves, leading to a faster and higher overall convergence plateau.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/yourusername/cyusa_loic_rl_summative.git
+   cd cyusa_loic_rl_summative
+   ```
 
-### b. Episodes to Converge
+2. **Create and activate virtual environment**
+   ```bash
+   # Windows
+   python -m venv .venv
+   .venv\Scripts\activate
 
-*(Insert plot showing episode length vs. timesteps here: rollout/ep_len_mean)*
+   # Linux/Mac
+   python3 -m venv .venv
+   source .venv/bin/activate
+   ```
 
-The episode length plot is crucial for measuring latency. All successful methods achieved stable performance in terms of steps within **20,000** timesteps.
+3. **Install dependencies**
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-**Quantitative Measures:** The optimal policy learned by the best agents (PPO and DQN) resulted in a mean episode length consistently between **3.0** and **3.5** steps.
+### Required Packages
 
-**Interpretation:** Since the ideal minimum is **2** steps (1 refinement + 1 classification), the agent learned that **2-3** refinement actions are often necessary for high-confidence classification. This proves the step penalty successfully incentivized the agent to minimize latency.
-
-### c. Generalization Testing
-
-Testing the trained champion DQN model (`DQN_Run_10_LR5e-04_G0.99_E0.3`) on unseen initial states confirmed robust generalization:
-
-#### Test Run 1 (10 Episodes)
-| Episode | True Class | Steps Taken | Final Reward | Classification |
-|---------|-----------|-------------|--------------|----------------|
-| 1 | Plastic | 7 | 970.00 | Correct |
-| 2 | Plastic | 6 | 975.00 | Correct |
-| 3 | Plastic | 7 | 970.00 | Correct |
-| 4 | Paper | 3 | 990.00 | Correct |
-| 5 | Paper | 3 | 990.00 | Correct |
-| 6 | Paper | 3 | 990.00 | Correct |
-| 7 | Paper | 3 | 990.00 | Correct |
-| 8 | Paper | 3 | 990.00 | Correct |
-| 9 | Paper | 3 | 990.00 | Correct |
-| 10 | Paper | 3 | 990.00 | Correct |
-
-**Average Steps:** 4.7 | **Average Reward:** 982.5 | **Accuracy:** 100%
-
-#### Test Run 2 (10 Episodes)
-| Episode | True Class | Steps Taken | Final Reward | Classification |
-|---------|-----------|-------------|--------------|----------------|
-| 1 | Plastic | 6 | 975.00 | Correct |
-| 2 | Paper | 3 | 990.00 | Correct |
-| 3 | Paper | 3 | 990.00 | Correct |
-| 4 | Plastic | 6 | 975.00 | Correct |
-| 5 | Paper | 3 | 990.00 | Correct |
-| 6 | Paper | 3 | 990.00 | Correct |
-| 7 | Paper | 3 | 990.00 | Correct |
-| 8 | Paper | 3 | 990.00 | Correct |
-| 9 | Plastic | 7 | 970.00 | Correct |
-| 10 | Plastic | 8 | 965.00 | Correct |
-
-**Average Steps:** 4.5 | **Average Reward:** 983.5 | **Accuracy:** 100%
-
-**Key Observations:**
-- The agent achieved **100% classification accuracy** across all test episodes
-- **Paper class** was consistently classified in **3 steps** (optimal performance)
-- **Plastic class** required **6-8 steps** on average, indicating higher initial ambiguity
-- All rewards remained above **965**, demonstrating robust generalization
-- The use of a continuous observation space and MlpPolicy successfully allowed the agent to learn a generalized function rather than memorizing state transitions
+```txt
+gymnasium>=0.29.0
+stable-baselines3>=2.0.0
+pygame>=2.5.0
+numpy>=1.24.0
+tensorboard>=2.13.0
+torch>=2.0.0
+```
 
 ---
 
-## 6. Conclusion and Discussion
+## ⚡ Quick Start
 
-The **PPO algorithm performed best** during training, achieving the highest mean reward (**955.4**) and showing superior training stability. This is because PPO uses trust regions to prevent drastic policy changes, making it ideal for the high-variance, sequential decision problem of the SmartSort system.
+### Run Pre-trained Agent Demo
 
-The **DQN champion model** demonstrated excellent real-world performance with **100% accuracy** on test runs, though it showed the characteristic weakness of training volatility. Despite this, the DQN agent learned an effective policy that prioritizes accuracy while managing latency effectively.
+```bash
+python main.py
+```
 
-### Strengths and Weaknesses
+This will:
+1. Load the champion DQN model
+2. Open a Pygame window showing real-time classification
+3. Run 10 test episodes with visual feedback
+4. Display classification results and rewards
 
-**PPO:**
-- ✅ **Strength:** Stability and rapid learning of the optimal policy (low latency)
-- ❌ **Weakness:** Requires more complex hyperparameter tuning
+### Train Your Own Agent
 
-**DQN:**
-- ✅ **Strength:** Simplicity and excellent generalization performance
-- ❌ **Weakness:** High training instability, requiring fine-tuning of the exploration strategy
+```bash
+# Train DQN agent
+python training/dqn_training.py --timesteps 50000
 
-**A2C:**
-- ✅ **Strength:** Good balance between stability and performance
-- ❌ **Weakness:** Slightly lower peak performance compared to PPO
+# Train PPO agent
+python training/pg_training.py --algorithm ppo --timesteps 50000
+
+# Train A2C agent
+python training/pg_training.py --algorithm a2c --timesteps 50000
+```
+
+### View Training Metrics
+
+```bash
+tensorboard --logdir=./logs
+```
+
+Then open `http://localhost:6006` in your browser.
+
+---
+
+## 📁 Project Structure
+
+```
+cyusa_loic_rl_summative/
+│
+├── environment/
+│   ├── custom_env.py            # Custom Gymnasium environment implementation
+│   └── rendering.py             # Visualization GUI components (Pygame)
+│
+├── training/
+│   ├── dqn_training.py          # Training script for DQN using Stable-Baselines3
+│   └── pg_training.py           # Training script for PPO/A2C using Stable-Baselines3
+│
+├── models/
+│   ├── dqn/                     # Saved DQN models
+│   │   └── DQN_Run_10_LR5e-04_G0.99_E0.3.zip
+│   └── pg/                      # Saved policy gradient models
+│       ├── PPO_Run_1_Best.zip
+│       └── A2C_Run_1_Best.zip
+│
+├── main.py                      # Entry point for running best performing model
+├── requirements.txt             # Project dependencies
+└── README.md                    # Project documentation
+```
+
+---
+
+## 🎮 Environment Details
+
+### Agent
+The **SmartSort Classifier Decision Module** interprets intermediate feature vectors and decides between:
+- Further refinement (focus on texture/shape)
+- Final classification (plastic or paper)
+
+### Action Space (Discrete - 4 actions)
+1. `Focus on Texture` - Refinement action
+2. `Focus on Shape/Edges` - Refinement action
+3. `Classify as Plastic` - Terminal action
+4. `Classify as Paper` - Terminal action
+
+### Observation Space (Continuous - 4D vector)
+```
+[Texture Feature, Shape Feature, Confidence_Plastic, Confidence_Paper]
+```
+
+### Reward Structure
+| Event | Reward | Purpose |
+|-------|--------|---------|
+| ✅ Correct Classification | +1000 | Encourage accuracy |
+| ❌ Incorrect Classification | -1000 | Penalize errors |
+| 🔄 Refinement Action | -10 | Discourage latency |
+| 📈 Confidence Increase | +5 | Reward learning progress |
+
+---
+
+## 📊 Training Results
+
+### Algorithm Comparison
+
+| Algorithm | Mean Reward | Mean Episode Length | Training Stability |
+|-----------|-------------|--------------------|--------------------|
+| **PPO** | **955.4** ⭐ | 3.0 steps | High ✅ |
+| **A2C** | 948.7 | 3.4 steps | Medium ⚠️ |
+| **DQN** | 924.9 | 3.5 steps | Low ⚠️ |
+
+### Champion Model Performance
+
+The DQN champion model (`DQN_Run_10_LR5e-04_G0.99_E0.3`) achieved:
+- **100% Accuracy** on test episodes
+- **3 steps** for Paper classification (optimal)
+- **6-8 steps** for Plastic classification
+- **Average reward: 983.0** across 20 test episodes
 
 ### Key Findings
-
-1. **Class-Specific Behavior:** The agent learned that Paper classification requires fewer refinement steps (3 steps) compared to Plastic (6-8 steps), suggesting the environment presents greater initial ambiguity for plastic items.
-
-2. **Latency-Accuracy Trade-off:** The reward structure successfully encouraged the agent to minimize steps while maintaining perfect accuracy.
-
-3. **Robust Generalization:** The continuous observation space enabled the agent to handle unseen states effectively, maintaining high performance across all test episodes.
-
-### Future Improvements
-
-With additional time, the project could be improved by:
-
-1. **Real Image Integration:** Integrating a CNN-based feature extractor to process actual images instead of mock features
-2. **Multi-Class Expansion:** Expanding from 2 classes (Plastic, Paper) to **6 waste categories** (Plastic, Paper, Metal, Glass, Organic, Other)
-3. **Full Deployment:** Converting the simulation into a production-ready system with real-time image classification
-4. **Hardware Optimization:** Implementing model quantization and optimization for deployment on edge devices in resource-constrained environments
+- 📄 **Paper items** are classified faster (3 steps) due to clearer features
+- 🥤 **Plastic items** require more refinement (6-8 steps) due to initial ambiguity
+- 🎯 PPO showed best training stability with highest peak performance
+- 🔄 DQN demonstrated excellent generalization despite training volatility
 
 ---
 
-**End of Report**
+## 💻 Usage
 
+### Basic Usage
+
+```python
+from environment.custom_env import SmartSortEnv
+from stable_baselines3 import DQN
+
+# Create environment
+env = SmartSortEnv()
+
+# Load trained model
+model = DQN.load("models/dqn/DQN_Run_10_LR5e-04_G0.99_E0.3")
+
+# Run inference
+obs, info = env.reset()
+for _ in range(100):
+    action, _states = model.predict(obs, deterministic=True)
+    obs, reward, terminated, truncated, info = env.step(action)
+    
+    if terminated or truncated:
+        print(f"Episode finished with reward: {reward}")
+        obs, info = env.reset()
+```
+
+### Advanced Training
+
+```python
+from environment.custom_env import SmartSortEnv
+from stable_baselines3 import PPO
+from stable_baselines3.common.callbacks import EvalCallback
+
+# Create environment
+env = SmartSortEnv()
+
+# Configure model
+model = PPO(
+    "MlpPolicy",
+    env,
+    learning_rate=1e-3,
+    gamma=0.99,
+    n_steps=1024,
+    verbose=1,
+    tensorboard_log="./logs/PPO"
+)
+
+# Setup evaluation callback
+eval_callback = EvalCallback(
+    env,
+    best_model_save_path="./models/pg/",
+    log_path="./logs/",
+    eval_freq=5000
+)
+
+# Train
+model.learn(total_timesteps=50000, callback=eval_callback)
+```
+
+---
+
+## 🎓 Academic Context
+
+**Course**: Reinforcement Learning Summative Assignment  
+**Student**: Cyusa Loic  
+**Project Focus**: Comparing Value-Based (DQN) vs Policy Gradient (PPO, A2C) methods for sequential decision-making in classification tasks
+
+### Research Questions
+1. Which RL algorithm learns the most efficient classification policy?
+2. Can RL agents balance latency and accuracy in ambiguous classification scenarios?
+3. How do different algorithms handle the exploration-exploitation trade-off?
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+---
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+- [Stable-Baselines3](https://stable-baselines3.readthedocs.io/) for RL implementations
+- [Gymnasium](https://gymnasium.farama.org/) for environment framework
+- [Pygame](https://www.pygame.org/) for visualization
+- Rwanda's waste management challenges as project inspiration
+
+---
+
+## 📧 Contact
+
+**Cyusa Loic**  
+- GitHub: [cyloic](https://github.com/cyloic)
+- Email: l.cyusa@alustudent.com
+- Project Link: [https://github.com/cyloic/cyusa_loic_rl_summative](https://github.com/yourusername/cyusa_loic_rl_summative)
+
+---
+
+## 🎥 Demo
+
+[Link to your 3-minute video demonstration]
+
+---
+
+<div align="center">
+  <strong>Made with ❤️ for intelligent waste management</strong>
+</div>
