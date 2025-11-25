@@ -3,8 +3,12 @@
 import gymnasium as gym
 from gymnasium import spaces
 import numpy as np
-# The renderer import should be relative
-from .rendering import SmartSortRenderer 
+
+# Try to import renderer, but don't fail if pygame isn't available
+try:
+    from .rendering import SmartSortRenderer
+except (ImportError, ModuleNotFoundError):
+    SmartSortRenderer = None 
 
 class SmartSortEnv(gym.Env):
     """
@@ -92,6 +96,8 @@ class SmartSortEnv(gym.Env):
         return self.state, reward, terminated, False, info
 
     def render(self):
+        if SmartSortRenderer is None:
+            return
         if self.renderer is None:
             self.renderer = SmartSortRenderer()
         
