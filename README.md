@@ -209,6 +209,24 @@ The DQN champion model (`DQN_Run_10_LR5e-04_G0.99_E0.3`) achieved:
 
 ---
 
+## Performance Analysis
+
+### Convergence Speed
+- PPO converged to 95%+ accuracy in ~20k timesteps
+- A2C required ~30k timesteps
+- DQN showed high variance, stabilizing after 35k timesteps
+
+### Exploration-Exploitation Analysis
+- DQN: ε-greedy (ε=0.1-0.3) provided consistent exploration
+- PPO: Entropy regularization (0.0001) balanced exploration naturally
+- A2C: Advantage estimation led to adaptive exploration
+
+### Algorithm Insights
+1. PPO's stability advantage due to clipped objective
+2. DQN's value function approach vulnerable to overestimation
+3. A2C's advantage estimation provided good gradients
+
+
 ## 💻 Usage
 
 ### Basic Usage
@@ -299,6 +317,7 @@ Contributions are welcome! Please follow these steps:
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
+
 
 ## 🙏 Acknowledgments
 
