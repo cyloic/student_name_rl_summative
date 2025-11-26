@@ -334,14 +334,15 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - GitHub: [cyloic](https://github.com/cyloic)
 - Email: l.cyusa@alustudent.com
 - Project Link: [https://github.com/cyloic/cyusa_loic_rl_summative](https://github.com/yourusername/cyusa_loic_rl_summative)
-- Demo Video : https://www.youtube.com/watch?v=BDUgbt6hHSE
+
 ---
 
 ## 🎥 Demo
 
-[Link to your 3-minute video demonstration]
+[https://www.youtube.com/watch?v=BDUgbt6hHSE]
 
 ---
+
 
 
 
